@@ -146,3 +146,10 @@ This document outlines common acceptance criteria, a recommended structure, and 
 
 ## HubSpot Integration
 - Ability to attach this proposal website to a deal
+
+## Component List
+- Reference
+- Example projects
+- Hosting setup
+- Technology recommendations
+- Monthly maintenance / support
