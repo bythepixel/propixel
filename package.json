@@ -10,7 +10,8 @@
     "prebuild": "npx prisma generate",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -22,6 +23,10 @@
   "devDependencies": {
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.0.0",
     "@types/pg": "^8.16.0",
     "@types/react": "^18.0.0",
@@ -29,6 +34,8 @@
     "autoprefixer": "^10.0.0",
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.1.1",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^30.2.0",
     "pg": "^8.16.3",
     "postcss": "^8.0.0",
     "prisma": "^7.3.0",

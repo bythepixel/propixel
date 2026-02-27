@@ -31,6 +31,36 @@ export default function Header() {
             >
               Users
             </Link>
+            <Link
+              href="/admin/companies"
+              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+                isActive('/admin/companies')
+                  ? 'bg-slate-700 text-indigo-400'
+                  : 'text-slate-300 hover:text-slate-100 hover:bg-slate-700/50'
+              }`}
+            >
+              Companies
+            </Link>
+            <Link
+              href="/admin/clients"
+              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+                isActive('/admin/clients')
+                  ? 'bg-slate-700 text-indigo-400'
+                  : 'text-slate-300 hover:text-slate-100 hover:bg-slate-700/50'
+              }`}
+            >
+              Clients
+            </Link>
+            <Link
+              href="/admin/proposals"
+              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+                isActive('/admin/proposals')
+                  ? 'bg-slate-700 text-indigo-400'
+                  : 'text-slate-300 hover:text-slate-100 hover:bg-slate-700/50'
+              }`}
+            >
+              Proposals
+            </Link>
             <button
               onClick={() => signOut()}
               className="px-3 py-2 rounded-lg text-sm font-semibold text-red-300 hover:text-red-200 hover:bg-red-900/20 transition-all"

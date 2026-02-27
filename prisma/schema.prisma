@@ -16,3 +16,50 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Company {
+  id         Int      @id @default(autoincrement())
+  name       String
+  slug       String   @unique
+  website    String?
+  industry   String?
+  phone      String?
+  email      String?
+  address1   String?
+  address2   String?
+  city       String?
+  state      String?
+  postalCode String?
+  country    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  clients   Client[]
+  proposals Proposal[]
+}
+
+model Client {
+  id        Int      @id @default(autoincrement())
+  companyId Int
+  firstName String
+  lastName  String
+  email     String?
+  phone     String?
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company   Company  @relation(fields: [companyId], references: [id])
+  proposals Proposal[]
+}
+
+model Proposal {
+  id        Int     @id @default(autoincrement())
+  title     String
+  slug      String  @unique
+  companyId Int?
+  clientId  Int?
+
+  company Company? @relation(fields: [companyId], references: [id])
+  client  Client?  @relation(fields: [clientId], references: [id])
+}
