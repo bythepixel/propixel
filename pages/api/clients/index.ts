@@ -3,6 +3,7 @@ import { prisma } from '../../../lib/prisma'
 import { requireAuth } from '../../../lib/middleware/auth'
 import { validateMethod } from '../../../lib/utils/methodValidator'
 import { handleError } from '../../../lib/utils/errorHandler'
+import { findOrCreateHubspotContact } from '../../../lib/services/hubspot'
 
 export default async function handler(
   req: NextApiRequest,
@@ -47,11 +48,29 @@ export default async function handler(
           title,
         },
         include: {
-          company: {
-            select: { id: true, name: true, slug: true },
-          },
+          company: true,
         },
       })
+
+      // HubSpot Sync
+      if (email) {
+        try {
+          const hubspotContact = await findOrCreateHubspotContact(
+            firstName,
+            lastName,
+            email,
+            client.company.hubspotId || undefined
+          )
+          await prisma.client.update({
+            where: { id: client.id },
+            data: { hubspotId: hubspotContact.id }
+          })
+          client.hubspotId = hubspotContact.id
+        } catch (hubspotError) {
+          console.error('HubSpot Contact Sync failed:', hubspotError)
+        }
+      }
+
       return res.status(201).json(client)
     } catch (e: any) {
       return handleError(e, res)

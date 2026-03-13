@@ -15,3 +15,11 @@ export async function requireAuth(
   }
   return session
 }
+
+export function authMiddleware(handler: (req: NextApiRequest, res: NextApiResponse) => Promise<any>) {
+  return async (req: NextApiRequest, res: NextApiResponse) => {
+    const session = await requireAuth(req, res);
+    if (!session) return;
+    return handler(req, res);
+  };
+}

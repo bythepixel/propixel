@@ -6,6 +6,36 @@ datasource db {
   provider = "postgresql"
 }
 
+model StylePalette {
+  id              Int      @id @default(autoincrement())
+  name            String   @unique
+  primaryColor    String?  @default("#3B82F6")
+  secondaryColor  String?  @default("#1E293B")
+  accentColor     String?  @default("#F59E0B")
+  backgroundColor String?  @default("#FFFFFF")
+  textColor       String?  @default("#111827")
+  headingColor    String?  @default("#000000")
+  fontFamily      String?  @default("Inter, sans-serif")
+  headingFont     String?  @default("Outfit, sans-serif")
+  isDefault       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  proposals Proposal[]
+}
+
+enum ProposalStatus {
+  DRAFT
+  SUBMITTED
+  LOCKED
+}
+
+enum ProposalOutcome {
+  WON
+  LOST
+  PENDING
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -25,6 +55,7 @@ model Company {
   industry   String?
   phone      String?
   email      String?
+  hubspotId  String?  @unique
   address1   String?
   address2   String?
   city       String?
@@ -36,6 +67,7 @@ model Company {
 
   clients   Client[]
   proposals Proposal[]
+  rfps      RFP[]
 }
 
 model Client {
@@ -46,6 +78,7 @@ model Client {
   email     String?
   phone     String?
   title     String?
+  hubspotId String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -53,13 +86,96 @@ model Client {
   proposals Proposal[]
 }
 
-model Proposal {
-  id        Int     @id @default(autoincrement())
-  title     String
-  slug      String  @unique
-  companyId Int?
-  clientId  Int?
+model TeamMember {
+  id         Int      @id @default(autoincrement())
+  name       String
+  title      String
+  experience String
+  bio        String
+  skillTags  String[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
 
-  company Company? @relation(fields: [companyId], references: [id])
-  client  Client?  @relation(fields: [clientId], references: [id])
+model ModularBlock {
+  id           Int      @id @default(autoincrement())
+  title        String
+  content      String
+  industryTags String[]
+  skillTags    String[]
+  complexity   String
+  embedConfig  Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  proposalBlocks ProposalBlock[]
+}
+
+model RFP {
+  id              Int      @id @default(autoincrement())
+  companyId       Int
+  originalFileUrl String?
+  aiSummary       String?
+  complexityScore Int?
+  rules             String?
+  criteria          String?
+  industry          String?
+  goals             String?
+  strategicAnalysis String? @db.Text
+  recommendedValue  Float?
+  recommendedCost   Float?
+  pricingExplanation String? @db.Text
+  suggestedBlocks   Json?
+  missingContent    String? @db.Text
+  internalReasoning String? @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company   Company    @relation(fields: [companyId], references: [id])
+  proposals Proposal[]
+}
+
+model Proposal {
+  id            Int            @id @default(autoincrement())
+  title         String
+  slug          String         @unique
+  status        ProposalStatus @default(DRAFT)
+  version       String         @default("1.0")
+  totalValue    Float?
+  totalCost     Float?
+  pdfUrl        String?
+  hubspotDealId String?        @unique
+  rfpId         Int?
+  companyId      Int?
+  clientId       Int?
+  stylePaletteId Int?
+  outcome        ProposalOutcome @default(PENDING)
+  feedback       String?         @db.Text
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  company      Company?      @relation(fields: [companyId], references: [id])
+  client       Client?       @relation(fields: [clientId], references: [id])
+  rfp          RFP?          @relation(fields: [rfpId], references: [id])
+  stylePalette StylePalette? @relation(fields: [stylePaletteId], references: [id])
+  blocks       ProposalBlock[]
+}
+
+model ProposalBlock {
+  id         Int      @id @default(autoincrement())
+  proposalId Int
+  blockId    Int
+  content    String   @db.Text
+  order      Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  proposal Proposal     @relation(fields: [proposalId], references: [id])
+  block    ModularBlock @relation(fields: [blockId], references: [id])
+}
+
+model SystemConfig {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
 }

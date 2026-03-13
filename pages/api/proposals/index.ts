@@ -3,6 +3,7 @@ import { prisma } from '../../../lib/prisma'
 import { requireAuth } from '../../../lib/middleware/auth'
 import { validateMethod } from '../../../lib/utils/methodValidator'
 import { handleError } from '../../../lib/utils/errorHandler'
+import { createHubspotDeal } from '../../../lib/services/hubspot'
 
 const parseOptionalId = (value: unknown): number | null => {
   if (value === null || value === undefined || value === '') return null
@@ -31,9 +32,10 @@ export default async function handler(
   }
 
   if (req.method === 'POST') {
-    const { title, slug, companyId, clientId } = req.body
+    const { title, slug, companyId, clientId, stylePaletteId } = req.body
     const parsedCompanyId = parseOptionalId(companyId)
     const parsedClientId = parseOptionalId(clientId)
+    const parsedStylePaletteId = parseOptionalId(stylePaletteId)
 
     if (!title || !slug) {
       return res.status(400).json({ error: 'Title and slug are required' })
@@ -61,12 +63,28 @@ export default async function handler(
           slug,
           companyId: resolvedCompanyId,
           clientId: parsedClientId,
+          stylePaletteId: parsedStylePaletteId,
         },
         include: {
-          company: { select: { id: true, name: true, slug: true } },
-          client: { select: { id: true, firstName: true, lastName: true } },
+          company: true,
+          client: true,
         },
       })
+
+      // HubSpot Sync
+      if (proposal.company?.hubspotId) {
+        try {
+          const hubspotDeal = await createHubspotDeal(proposal.title, 0, proposal.company.hubspotId)
+          await prisma.proposal.update({
+            where: { id: proposal.id },
+            data: { hubspotDealId: hubspotDeal.id }
+          })
+          proposal.hubspotDealId = hubspotDeal.id
+        } catch (hubspotError) {
+          console.error('HubSpot Sync failed, but proposal was created:', hubspotError)
+        }
+      }
+
       return res.status(201).json(proposal)
     } catch (e: any) {
       return handleError(e, res)

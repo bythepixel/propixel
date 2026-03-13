@@ -17,7 +17,7 @@ export default async function handler(
   const session = await requireAuth(req, res)
   if (!session) return
 
-  if (!validateMethod(req, res, ['DELETE', 'PUT'])) return
+  if (!validateMethod(req, res, ['GET', 'DELETE', 'PUT'])) return
 
   const { id } = req.query
   const proposalId = Number(id)
@@ -26,13 +26,46 @@ export default async function handler(
     return res.status(400).json({ error: 'Invalid proposal id' })
   }
 
+  if (req.method === 'GET') {
+    try {
+      const proposal = await prisma.proposal.findUnique({
+        where: { id: proposalId },
+      })
+      
+      if (!proposal) return res.status(404).json({ error: 'Proposal not found' })
+
+      // Manual fetch of relations using a robust approach
+      // Using 'as any' here because Prisma's types are out of sync in the IDE while the client regenerates
+      const [blocks, company, client, rfp] = await Promise.all([
+        ((prisma as any).proposalBlock || (prisma as any).proposalBlocks).findMany({
+          where: { proposalId },
+          orderBy: { order: 'asc' },
+        }),
+        proposal.companyId ? (prisma as any).company.findUnique({ where: { id: proposal.companyId } }) : Promise.resolve(null),
+        proposal.clientId ? (prisma as any).client.findUnique({ where: { id: proposal.clientId } }) : Promise.resolve(null),
+        proposal.rfpId ? ((prisma as any).rfp || (prisma as any).rFP).findUnique({ where: { id: proposal.rfpId } }) : Promise.resolve(null),
+      ])
+
+      return res.status(200).json({
+        ...proposal,
+        blocks,
+        company,
+        client,
+        rfp,
+      })
+    } catch (e: any) {
+      console.error("Fetch error:", e);
+      return handleError(e, res)
+    }
+  }
+
   if (req.method === 'DELETE') {
     await prisma.proposal.delete({ where: { id: proposalId } })
     return res.status(204).end()
   }
 
   if (req.method === 'PUT') {
-    const { title, slug, companyId, clientId } = req.body
+    const { title, slug, companyId, clientId, blocks } = req.body
     const parsedCompanyId = parseOptionalId(companyId)
     const parsedClientId = parseOptionalId(clientId)
 
@@ -56,6 +89,19 @@ export default async function handler(
         resolvedCompanyId = resolvedCompanyId ?? client.companyId
       }
 
+      // Handle blocks if provided
+      if (blocks && Array.isArray(blocks)) {
+        await (prisma as any).proposalBlock.deleteMany({ where: { proposalId } })
+        await (prisma as any).proposalBlock.createMany({
+          data: blocks.map((b: any, index: number) => ({
+            proposalId,
+            blockId: b.blockId,
+            content: b.content,
+            order: index,
+          }))
+        })
+      }
+
       const proposal = await prisma.proposal.update({
         where: { id: proposalId },
         data: {
@@ -64,13 +110,26 @@ export default async function handler(
           companyId: resolvedCompanyId,
           clientId: parsedClientId,
         },
-        include: {
-          company: { select: { id: true, name: true, slug: true } },
-          client: { select: { id: true, firstName: true, lastName: true } },
-        },
       })
-      return res.status(200).json(proposal)
+
+      // Fetch updated relations manually
+      const [updatedBlocks, company, client] = await Promise.all([
+        (prisma as any).proposalBlock.findMany({
+          where: { proposalId },
+          orderBy: { order: 'asc' },
+        }),
+        proposal.companyId ? (prisma as any).company.findUnique({ where: { id: proposal.companyId } }) : Promise.resolve(null),
+        proposal.clientId ? (prisma as any).client.findUnique({ where: { id: proposal.clientId } }) : Promise.resolve(null),
+      ])
+
+      return res.status(200).json({
+        ...proposal,
+        blocks: updatedBlocks,
+        company,
+        client,
+      })
     } catch (e: any) {
+      console.error("Update error:", e);
       return handleError(e, res)
     }
   }

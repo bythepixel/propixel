@@ -1,45 +1,43 @@
-const { PrismaClient } = require('@prisma/client')
-const { PrismaPg } = require('@prisma/adapter-pg')
-const { Pool } = require('pg')
-const bcrypt = require('bcryptjs')
+const { PrismaClient } = require('@prisma/client');
+const { Pool } = require('pg');
+const { PrismaPg } = require('@prisma/adapter-pg');
+require('dotenv').config();
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  max: 5,
-})
-
-const adapter = new PrismaPg(pool)
-const prisma = new PrismaClient({ adapter })
+    connectionString: process.env.DATABASE_URL,
+});
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  const email = 'turner@bythepixel.com'
-  const password = '123'
-  const hashedPassword = await bcrypt.hash(password, 10)
+    console.log('Seeding Style Palettes...');
 
-  await prisma.user.upsert({
-    where: { email },
-    update: {
-      password: hashedPassword,
-      firstName: 'Turner',
-      lastName: 'Walters',
-      isAdmin: true,
-    },
-    create: {
-      email,
-      password: hashedPassword,
-      firstName: 'Turner',
-      lastName: 'Walters',
-      isAdmin: true,
-    },
-  })
+    const defaultPalette = await prisma.stylePalette.upsert({
+        where: { name: 'ProPixel Default' },
+        update: {},
+        create: {
+            name: 'ProPixel Default',
+            primaryColor: '#3B82F6',
+            secondaryColor: '#1E293B',
+            accentColor: '#F59E0B',
+            backgroundColor: '#FFFFFF',
+            textColor: '#111827',
+            headingColor: '#000000',
+            fontFamily: 'Inter, sans-serif',
+            headingFont: 'Outfit, sans-serif',
+            isDefault: true,
+        },
+    });
+
+    console.log(`Seeded default palette: ${defaultPalette.name}`);
 }
 
 main()
-  .catch((e) => {
-    console.error(e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-    await pool.end()
-  })
+    .catch((e) => {
+        console.error(e);
+        process.exit(1);
+    })
+    .finally(async () => {
+        await prisma.$disconnect();
+        await pool.end();
+    });

@@ -5,78 +5,66 @@ import { useRouter } from 'next/router'
 export default function Header() {
   const { data: session } = useSession()
   const router = useRouter()
+
+  const navLinks = [
+    { name: 'Dashboard', href: '/admin/dashboard' },
+    { name: 'Proposals', href: '/admin/proposals' },
+    { name: 'Blocks', href: '/admin/blocks' },
+    { name: 'Team', href: '/admin/team' },
+    { name: 'Branding', href: '/admin/palettes' },
+    { name: 'Companies', href: '/admin/companies' },
+    { name: 'Clients', href: '/admin/clients' },
+    { name: 'Users', href: '/admin/users' },
+    { name: 'HubSpot', href: '/admin/hubspot' },
+  ]
+
   const isActive = (path: string) => router.pathname === path
 
   return (
-    <div className="w-full bg-slate-800/80 backdrop-blur-md border-b border-slate-700 sticky top-0 z-50">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold">
+    <div className="w-full bg-slate-900/90 backdrop-blur-xl border-b border-slate-800 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20">
+          <Link href="/admin/dashboard" className="flex items-center gap-3 group">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-black shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
               P
             </div>
-            <h1 className="text-2xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">
-              ProPixel
+            <h1 className="text-2xl font-black tracking-tighter text-white">
+              ProPixel <span className="text-blue-500 text-xs font-bold uppercase tracking-widest ml-1 bg-blue-500/10 px-2 py-0.5 rounded">Admin</span>
             </h1>
           </Link>
 
-          <nav className="flex items-center gap-2">
-            <Link
-              href="/admin/users"
-              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                isActive('/admin/users')
-                  ? 'bg-slate-700 text-indigo-400'
-                  : 'text-slate-300 hover:text-slate-100 hover:bg-slate-700/50'
-              }`}
-            >
-              Users
-            </Link>
-            <Link
-              href="/admin/companies"
-              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                isActive('/admin/companies')
-                  ? 'bg-slate-700 text-indigo-400'
-                  : 'text-slate-300 hover:text-slate-100 hover:bg-slate-700/50'
-              }`}
-            >
-              Companies
-            </Link>
-            <Link
-              href="/admin/clients"
-              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                isActive('/admin/clients')
-                  ? 'bg-slate-700 text-indigo-400'
-                  : 'text-slate-300 hover:text-slate-100 hover:bg-slate-700/50'
-              }`}
-            >
-              Clients
-            </Link>
-            <Link
-              href="/admin/proposals"
-              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                isActive('/admin/proposals')
-                  ? 'bg-slate-700 text-indigo-400'
-                  : 'text-slate-300 hover:text-slate-100 hover:bg-slate-700/50'
-              }`}
-            >
-              Proposals
-            </Link>
+          <nav className="hidden xl:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${isActive(link.href)
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800'
+                  }`}
+              >
+                {link.name}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-4">
+            {session?.user?.email && (
+              <div className="hidden lg:block text-right">
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">Agent</p>
+                <p className="text-xs font-mono text-slate-300">{session.user.email.split('@')[0]}</p>
+              </div>
+            )}
             <button
               onClick={() => signOut()}
-              className="px-3 py-2 rounded-lg text-sm font-semibold text-red-300 hover:text-red-200 hover:bg-red-900/20 transition-all"
+              className="bg-slate-800 hover:bg-red-900/20 hover:text-red-400 text-slate-400 p-2.5 rounded-xl transition-all border border-slate-700"
+              title="Sign Out"
             >
-              Sign Out
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
             </button>
-          </nav>
-        </div>
-      </div>
-      {session?.user?.email && (
-        <div className="bg-slate-800 border-t border-slate-700 text-xs text-slate-500">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-            Signed in as <span className="font-mono text-slate-400">{session.user.email}</span>
           </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { prisma } from '../../../lib/prisma'
 import { requireAuth } from '../../../lib/middleware/auth'
 import { validateMethod } from '../../../lib/utils/methodValidator'
 import { handleError } from '../../../lib/utils/errorHandler'
+import { findOrCreateHubspotCompany } from '../../../lib/services/hubspot'
 
 export default async function handler(
   req: NextApiRequest,
@@ -57,6 +58,20 @@ export default async function handler(
           country,
         },
       })
+
+      // HubSpot Sync
+      try {
+        const domain = website ? new URL(website.startsWith('http') ? website : `https://${website}`).hostname : undefined
+        const hubspotCompany = await findOrCreateHubspotCompany(name, domain)
+        await prisma.company.update({
+          where: { id: company.id },
+          data: { hubspotId: hubspotCompany.id }
+        })
+        company.hubspotId = hubspotCompany.id
+      } catch (hubspotError) {
+        console.error('HubSpot Company Sync failed:', hubspotError)
+      }
+
       return res.status(201).json(company)
     } catch (e: any) {
       return handleError(e, res)

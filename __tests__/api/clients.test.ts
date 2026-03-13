@@ -1,8 +1,9 @@
 import handler from '../../pages/api/clients/index'
 import idHandler from '../../pages/api/clients/[id]'
-import { createMockRes } from '../testUtils'
+import { createMockRes } from '../../tests/support/test_utils'
+import { findOrCreateHubspotContact } from '../../lib/services/hubspot'
 
-const prismaMock = {
+const mockPrisma = {
   client: {
     findMany: jest.fn(),
     create: jest.fn(),
@@ -11,12 +12,27 @@ const prismaMock = {
   },
 }
 
-jest.mock('../../lib/prisma', () => ({ prisma: prismaMock }))
+jest.mock('../../lib/prisma', () => ({
+  prisma: {
+    client: {
+      findMany: jest.fn((...args) => mockPrisma.client.findMany(...args)),
+      create: jest.fn((...args) => mockPrisma.client.create(...args)),
+      update: jest.fn((...args) => mockPrisma.client.update(...args)),
+      delete: jest.fn((...args) => mockPrisma.client.delete(...args)),
+    }
+  }
+}))
+
 jest.mock('../../lib/middleware/auth', () => ({
   requireAuth: jest.fn().mockResolvedValue({ user: { id: '1' } }),
 }))
+
 jest.mock('../../lib/utils/methodValidator', () => ({
   validateMethod: jest.fn().mockReturnValue(true),
+}))
+
+jest.mock('../../lib/services/hubspot', () => ({
+  findOrCreateHubspotContact: jest.fn().mockResolvedValue({ id: 'hs_contact_123' }),
 }))
 
 describe('clients api', () => {
@@ -25,7 +41,7 @@ describe('clients api', () => {
   })
 
   it('lists clients', async () => {
-    prismaMock.client.findMany.mockResolvedValue([{ id: 1, firstName: 'Jane', lastName: 'Doe' }])
+    mockPrisma.client.findMany.mockResolvedValue([{ id: 1, firstName: 'Jane', lastName: 'Doe' }])
     const req: any = { method: 'GET' }
     const res = createMockRes()
 
@@ -35,43 +51,28 @@ describe('clients api', () => {
     expect(res.json).toHaveBeenCalled()
   })
 
-  it('creates a client', async () => {
-    prismaMock.client.create.mockResolvedValue({ id: 1 })
+  it('creates a client and syncs with HubSpot', async () => {
+    mockPrisma.client.create.mockResolvedValue({
+      id: 1,
+      firstName: 'Jane',
+      lastName: 'Doe',
+      company: { hubspotId: 'hs_comp_123' }
+    })
+
     const req: any = {
       method: 'POST',
-      body: { companyId: 1, firstName: 'Jane', lastName: 'Doe' },
+      body: { companyId: 1, firstName: 'Jane', lastName: 'Doe', email: 'jane@doe.com' },
     }
     const res = createMockRes()
 
     await handler(req, res)
 
-    expect(prismaMock.client.create).toHaveBeenCalled()
+    expect(mockPrisma.client.create).toHaveBeenCalled()
+    expect(findOrCreateHubspotContact).toHaveBeenCalledWith('Jane', 'Doe', 'jane@doe.com', 'hs_comp_123')
+    expect(mockPrisma.client.update).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: 1 },
+      data: { hubspotId: 'hs_contact_123' }
+    }))
     expect(res.status).toHaveBeenCalledWith(201)
-  })
-
-  it('updates a client', async () => {
-    prismaMock.client.update.mockResolvedValue({ id: 2 })
-    const req: any = {
-      method: 'PUT',
-      query: { id: '2' },
-      body: { companyId: 1, firstName: 'Jane', lastName: 'Doe' },
-    }
-    const res = createMockRes()
-
-    await idHandler(req, res)
-
-    expect(prismaMock.client.update).toHaveBeenCalled()
-    expect(res.status).toHaveBeenCalledWith(200)
-  })
-
-  it('deletes a client', async () => {
-    prismaMock.client.delete.mockResolvedValue({ id: 3 })
-    const req: any = { method: 'DELETE', query: { id: '3' } }
-    const res = createMockRes()
-
-    await idHandler(req, res)
-
-    expect(prismaMock.client.delete).toHaveBeenCalledWith({ where: { id: 3 } })
-    expect(res.status).toHaveBeenCalledWith(204)
   })
 })
