@@ -165,9 +165,10 @@ export default async function LibraryPage({
                       Block wrapper: {b.visualTemplate.name}
                     </p>
                   ) : null}
-                  <p className="mt-2 max-w-3xl whitespace-pre-wrap text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-                    {preview}
-                  </p>
+                  <div
+                    className="prose prose-sm mt-2 max-w-3xl text-zinc-700 dark:prose-invert dark:text-zinc-300"
+                    dangerouslySetInnerHTML={{ __html: preview }}
+                  />
                 </div>
                 {canManage && canEdit ? (
                   <div className="flex shrink-0 items-center gap-3">

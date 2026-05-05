@@ -6,6 +6,7 @@ import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
 import { canDeleteBlocks, canManageContentLibrary } from "@/lib/permissions";
+import { normalizeBodyFields } from "@/lib/content-block-bodies";
 
 export async function createContentBlockAction(formData: FormData) {
   const session = await getSession();
@@ -13,7 +14,8 @@ export async function createContentBlockAction(formData: FormData) {
     throw new Error("Forbidden");
   }
   const title = String(formData.get("title") ?? "").trim();
-  const body = String(formData.get("body") ?? "");
+  const bodyFields = normalizeBodyFields(formData.getAll("bodyFields").map(String));
+  const body = bodyFields[0] ?? "";
   const usageGuidance = String(formData.get("usageGuidance") ?? "").trim() || null;
   const categoryId = String(formData.get("categoryId") ?? "");
   const visualTemplateId = String(formData.get("visualTemplateId") ?? "").trim() || null;
@@ -25,6 +27,7 @@ export async function createContentBlockAction(formData: FormData) {
     data: {
       title,
       body,
+      bodyFieldsJson: JSON.stringify(bodyFields),
       usageGuidance,
       sensitive,
       visualTemplateId,
@@ -49,7 +52,8 @@ export async function updateContentBlockAction(blockId: string, formData: FormDa
     throw new Error("Forbidden");
   }
   const title = String(formData.get("title") ?? "").trim();
-  const body = String(formData.get("body") ?? "");
+  const bodyFields = normalizeBodyFields(formData.getAll("bodyFields").map(String));
+  const body = bodyFields[0] ?? "";
   const usageGuidance = String(formData.get("usageGuidance") ?? "").trim() || null;
   const categoryId = String(formData.get("categoryId") ?? "");
   const visualTemplateId = String(formData.get("visualTemplateId") ?? "").trim() || null;
@@ -63,6 +67,7 @@ export async function updateContentBlockAction(blockId: string, formData: FormDa
     data: {
       title,
       body,
+      bodyFieldsJson: JSON.stringify(bodyFields),
       usageGuidance,
       sensitive,
       visualTemplateId,

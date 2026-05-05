@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { canDeleteBlocks, canEditBlockDefinition, canManageContentLibrary } from "@/lib/permissions";
 import { deleteContentBlockAction, updateContentBlockAction } from "@/actions/content-blocks";
+import { BodyFieldsEditor } from "@/components/body-fields-editor";
+import { parseBodyFields } from "@/lib/content-block-bodies";
 
 export default async function EditBlockPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -36,9 +38,17 @@ export default async function EditBlockPage({ params }: { params: Promise<{ id: 
   const tags = await prisma.tag.findMany({ orderBy: { name: "asc" } });
   const blockVisualTemplates = await prisma.blockVisualTemplate.findMany({
     orderBy: { name: "asc" },
+    select: { id: true, name: true, bodyFieldCount: true },
+  });
+  const proposalVisualTemplates = await prisma.visualTemplate.findMany({
+    orderBy: { name: "asc" },
     select: { id: true, name: true },
   });
   const selected = new Set(block.tags.map((t) => t.tagId));
+  const initialBodyFields = parseBodyFields({
+    body: block.body,
+    bodyFieldsJson: block.bodyFieldsJson,
+  });
 
   return (
     <div className="mx-auto max-w-2xl flex-1 px-4 py-8">
@@ -57,16 +67,10 @@ export default async function EditBlockPage({ params }: { params: Promise<{ id: 
           />
         </div>
         <div>
-          <label htmlFor="body" className="block text-sm font-medium">
-            Body
-          </label>
-          <textarea
-            id="body"
-            name="body"
-            rows={8}
-            defaultValue={block.body}
-            className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 font-mono text-sm dark:border-zinc-600 dark:bg-zinc-900"
-          />
+          <p className="block text-sm font-medium">Body fields (HTML)</p>
+          <div className="mt-1">
+            <BodyFieldsEditor initialFields={initialBodyFields} />
+          </div>
         </div>
         <div>
           <label htmlFor="usageGuidance" className="block text-sm font-medium">
@@ -111,7 +115,7 @@ export default async function EditBlockPage({ params }: { params: Promise<{ id: 
             <option value="">No wrapper</option>
             {blockVisualTemplates.map((template) => (
               <option key={template.id} value={template.id}>
-                {template.name}
+                {template.name} ({template.bodyFieldCount} bodies)
               </option>
             ))}
           </select>
@@ -148,6 +152,41 @@ export default async function EditBlockPage({ params }: { params: Promise<{ id: 
           </Link>
         </div>
       </form>
+      {block.visualTemplate ? (
+        <div className="mt-8 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+          <p className="text-sm font-medium">Live block wrapper preview</p>
+          <form
+            action={`/library/${id}/wrapper-preview`}
+            method="GET"
+            target="_blank"
+            className="mt-2 flex flex-wrap items-end gap-2"
+          >
+            <div>
+              <label htmlFor="proposalVisualTemplateId" className="block text-sm">
+                Proposal visual template context (optional)
+              </label>
+              <select
+                id="proposalVisualTemplateId"
+                name="proposalVisualTemplateId"
+                className="mt-1 w-80 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+              >
+                <option value="">None</option>
+                {proposalVisualTemplates.map((template) => (
+                  <option key={template.id} value={template.id}>
+                    {template.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="submit"
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600"
+            >
+              Open wrapper preview
+            </button>
+          </form>
+        </div>
+      ) : null}
       {canDeleteBlocks(session.user.role) ? (
         <form className="mt-12 border-t border-red-200 pt-8 dark:border-red-900/50" action={deleteContentBlockAction.bind(null, id)}>
           <button type="submit" className="text-sm text-red-600 hover:underline dark:text-red-400">

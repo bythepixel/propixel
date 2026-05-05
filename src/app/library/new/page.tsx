@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { canManageContentLibrary } from "@/lib/permissions";
 import { createContentBlockAction } from "@/actions/content-blocks";
+import { BodyFieldsEditor } from "@/components/body-fields-editor";
 
 export default async function NewBlockPage() {
   const session = await getSession();
@@ -14,7 +15,7 @@ export default async function NewBlockPage() {
   const tags = await prisma.tag.findMany({ orderBy: { name: "asc" } });
   const blockVisualTemplates = await prisma.blockVisualTemplate.findMany({
     orderBy: { name: "asc" },
-    select: { id: true, name: true },
+    select: { id: true, name: true, bodyFieldCount: true },
   });
 
   return (
@@ -37,15 +38,10 @@ export default async function NewBlockPage() {
           />
         </div>
         <div>
-          <label htmlFor="body" className="block text-sm font-medium">
-            Body
-          </label>
-          <textarea
-            id="body"
-            name="body"
-            rows={8}
-            className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 font-mono text-sm dark:border-zinc-600 dark:bg-zinc-900"
-          />
+          <p className="block text-sm font-medium">Body fields (HTML)</p>
+          <div className="mt-1">
+            <BodyFieldsEditor />
+          </div>
         </div>
         <div>
           <label htmlFor="usageGuidance" className="block text-sm font-medium">
@@ -87,7 +83,7 @@ export default async function NewBlockPage() {
             <option value="">No wrapper</option>
             {blockVisualTemplates.map((template) => (
               <option key={template.id} value={template.id}>
-                {template.name}
+                {template.name} ({template.bodyFieldCount} bodies)
               </option>
             ))}
           </select>

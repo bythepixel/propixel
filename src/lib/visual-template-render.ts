@@ -10,20 +10,20 @@ function escapeHtml(input: string): string {
     .replaceAll("'", "&#39;");
 }
 
-function nlToBr(input: string): string {
-  return escapeHtml(input).replaceAll("\n", "<br />");
-}
-
 export function renderProposalContentHtml(data: ProposalPdfPayload): string {
   const sectionsHtml = data.sections
     .map((section) => {
-      const plainBody = `<p>${nlToBr(section.body)}</p>`;
+      const plainBody = section.body;
       const wrappedBody = section.blockVisualTemplate
         ? renderBlockVisualTemplateDocument({
             html: section.blockVisualTemplate.html,
             css: section.blockVisualTemplate.css,
             js: section.blockVisualTemplate.js,
-            block: { title: section.sectionTitle, body: section.body },
+            block: {
+              title: section.sectionTitle,
+              body: section.body,
+              bodyFields: section.bodyFields ?? [section.body],
+            },
           })
         : plainBody;
       return `

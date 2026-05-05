@@ -168,7 +168,10 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
                     </div>
                   ) : null}
                 </div>
-                <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">{resolved}</p>
+                <div
+                  className="prose prose-sm mt-2 max-w-none text-zinc-700 dark:prose-invert dark:text-zinc-300"
+                  dangerouslySetInnerHTML={{ __html: resolved }}
+                />
                 {canEdit ? (
                   <form action={updateSectionOverrideAction.bind(null, s.id, id)} className="mt-4 flex flex-col gap-2">
                     <label htmlFor={`ov-${s.id}`} className="text-sm font-medium">

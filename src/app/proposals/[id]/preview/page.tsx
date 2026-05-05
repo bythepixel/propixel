@@ -74,7 +74,7 @@ export default async function ProposalPreviewPage({
         {pdfData.sections.map((s, i) => (
           <section key={i} className="mt-8">
             <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-100">{s.sectionTitle}</h2>
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{s.body}</p>
+            <div className="prose prose-sm mt-2 max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: s.body }} />
           </section>
         ))}
         {pdfData.lineItems.length > 0 ? (

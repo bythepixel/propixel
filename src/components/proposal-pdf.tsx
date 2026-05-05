@@ -9,6 +9,19 @@ import {
   PDFDownloadLink,
 } from "@react-pdf/renderer";
 
+function htmlToPlainText(input: string): string {
+  return input
+    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const styles = StyleSheet.create({
   page: { padding: 40, fontSize: 11, fontFamily: "Helvetica" },
   title: { fontSize: 20, marginBottom: 16, fontFamily: "Helvetica-Bold" },
@@ -26,6 +39,7 @@ export type ProposalPdfPayload = {
   sections: {
     sectionTitle: string;
     body: string;
+    bodyFields?: string[];
     blockVisualTemplate?: { html: string; css: string; js: string } | null;
   }[];
   lineItems: { label: string; quantity: number; unitPrice: number }[];
@@ -45,7 +59,7 @@ function ProposalDoc({ data }: { data: ProposalPdfPayload }) {
         {data.sections.map((sec, i) => (
           <View key={i} style={styles.section} wrap>
             <Text style={styles.sectionTitle}>{sec.sectionTitle}</Text>
-            <Text style={styles.body}>{sec.body}</Text>
+            <Text style={styles.body}>{htmlToPlainText(sec.body)}</Text>
           </View>
         ))}
         {data.lineItems.length > 0 ? (

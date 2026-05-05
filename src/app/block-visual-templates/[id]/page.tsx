@@ -21,6 +21,10 @@ export default async function BlockVisualTemplateDetailPage({
     include: { blocks: { select: { id: true, title: true }, orderBy: { title: "asc" } } },
   });
   if (!template) notFound();
+  const proposalVisualTemplates = await prisma.visualTemplate.findMany({
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, css: true, js: true },
+  });
 
   return (
     <div className="mx-auto max-w-6xl flex-1 px-4 py-8">
@@ -30,7 +34,13 @@ export default async function BlockVisualTemplateDetailPage({
           <label htmlFor="name" className="block text-sm font-medium">Name</label>
           <input id="name" name="name" required defaultValue={template.name} className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 dark:border-zinc-600 dark:bg-zinc-900" />
         </div>
-        <BlockVisualTemplateEditor initialHtml={template.html} initialCss={template.css} initialJs={template.js} />
+        <BlockVisualTemplateEditor
+          initialHtml={template.html}
+          initialCss={template.css}
+          initialJs={template.js}
+          storedBodyFieldCount={template.bodyFieldCount}
+          proposalVisualTemplates={proposalVisualTemplates}
+        />
         <button type="submit" className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900">
           Save block visual template
         </button>
