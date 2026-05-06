@@ -54,6 +54,7 @@ export async function updateTemplateMetaAction(templateId: string, formData: For
   });
   revalidatePath("/templates");
   revalidatePath(`/templates/${templateId}`);
+  redirect(`/templates/${templateId}?saved=1`);
 }
 
 export async function addTemplateSectionAction(templateId: string, formData: FormData) {

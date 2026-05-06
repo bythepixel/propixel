@@ -6,6 +6,7 @@ import { nanoid } from "nanoid";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
+import { parseSectionOverrideFields } from "@/lib/proposal-text";
 import {
   canCreateProposal,
   canEditProposal,
@@ -82,18 +83,35 @@ export async function updateSectionOverrideAction(sectionId: string, proposalId:
   if (!session?.user?.id || !canEditProposal(session.user.role)) {
     throw new Error("Forbidden");
   }
-  const raw = String(formData.get("overrideBody") ?? "");
-  const overrideBody = raw.trim() === "" ? null : raw;
+  const section = await prisma.proposalSection.findUnique({
+    where: { id: sectionId },
+    select: { overrideFieldsJson: true, overrideBody: true },
+  });
+  const currentFields = section ? parseSectionOverrideFields(section) : [];
+  const incomingFields = formData.getAll("overrideFields").map((value) => String(value ?? ""));
+  const activeIndexes = new Set(
+    formData
+      .getAll("overrideActive")
+      .map((value) => Number(value))
+      .filter((value) => Number.isInteger(value) && value >= 0),
+  );
+  const maxLen = Math.max(incomingFields.length, currentFields.length);
+  const overrideFields = Array.from({ length: maxLen }, (_, index) => {
+    if (!activeIndexes.has(index)) return "";
+    return incomingFields[index] ?? "";
+  });
+  const first = overrideFields[0] ?? "";
+  const overrideBody = first.trim() === "" ? null : first;
   await prisma.proposalSection.update({
     where: { id: sectionId },
-    data: { overrideBody },
+    data: { overrideBody, overrideFieldsJson: JSON.stringify(overrideFields) },
   });
   await writeAuditLog({
     userId: session.user.id,
     action: "UPDATE_SECTION_OVERRIDE",
     entityType: "ProposalSection",
     entityId: sectionId,
-    details: { proposalId, hasOverride: overrideBody !== null },
+    details: { proposalId, overrideFieldCount: overrideFields.length, hasAnyOverride: overrideFields.some((value) => value !== "") },
   });
   revalidatePath(`/proposals/${proposalId}`);
 }

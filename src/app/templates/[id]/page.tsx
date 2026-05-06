@@ -9,8 +9,16 @@ import {
   updateTemplateMetaAction,
 } from "@/actions/templates";
 
-export default async function TemplateDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function TemplateDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ saved?: string }>;
+}) {
   const { id } = await params;
+  const sp = await searchParams;
+  const isSaved = sp.saved === "1";
   const session = await getSession();
   const canManage = session?.user && canManageTemplates(session.user.role);
 
@@ -34,6 +42,11 @@ export default async function TemplateDetailPage({ params }: { params: Promise<{
 
   return (
     <div className="mx-auto max-w-3xl flex-1 px-4 py-8">
+      {isSaved ? (
+        <p className="mb-4 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800 dark:border-green-900 dark:bg-green-900/30 dark:text-green-100">
+          Saved successfully.
+        </p>
+      ) : null}
       {canManage ? (
         <form action={updateTemplateMetaAction.bind(null, id)} className="flex flex-col gap-4 border-b border-zinc-200 pb-8 dark:border-zinc-800">
           <h1 className="text-2xl font-semibold">Edit template</h1>
@@ -63,7 +76,7 @@ export default async function TemplateDetailPage({ params }: { params: Promise<{
           </div>
           <div>
             <label htmlFor="visualTemplateId" className="block text-sm font-medium">
-              Visual template
+              Global Visual
             </label>
             <select
               id="visualTemplateId"
@@ -87,7 +100,7 @@ export default async function TemplateDetailPage({ params }: { params: Promise<{
         <>
           <h1 className="text-2xl font-semibold">{template.name}</h1>
           {template.description ? <p className="mt-2 text-sm text-zinc-600">{template.description}</p> : null}
-          <p className="mt-2 text-sm text-zinc-600">Visual template: {template.visualTemplate?.name ?? "Not set"}</p>
+          <p className="mt-2 text-sm text-zinc-600">Global Visual: {template.visualTemplate?.name ?? "Not set"}</p>
         </>
       )}
 

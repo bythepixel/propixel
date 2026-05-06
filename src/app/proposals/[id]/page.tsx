@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { resolveSectionBody } from "@/lib/proposal-text";
+import { parseSectionOverrideFields } from "@/lib/proposal-text";
 import { computePricingTotals } from "@/lib/pricing";
+import { parseBodyFields } from "@/lib/content-block-bodies";
 import {
   canEditProposal,
   canPublishOrExport,
@@ -20,7 +21,10 @@ import {
   updateProposalTitleAction,
   updateSectionOverrideAction,
 } from "@/actions/proposals";
+import { HtmlEditorField } from "@/components/html-editor-field";
 import { ProposalUpload } from "./proposal-upload";
+import { SectionsToggleControls } from "./sections-toggle-controls";
+import { ShareLinkCopy } from "./share-link-copy";
 
 export default async function ProposalEditorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -102,9 +106,7 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
               </span>
               <p className="max-w-md text-xs text-zinc-500">
                 Share link
-                <span className="mt-1 block break-all rounded border border-zinc-300 bg-zinc-50 px-2 py-1 font-mono text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100">
-                  {shareUrl}
-                </span>
+                <ShareLinkCopy url={shareUrl} />
               </p>
               <form action={unpublishProposalAction.bind(null, id)}>
                 <button type="submit" className="text-red-600 hover:underline dark:text-red-400">
@@ -131,65 +133,81 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           Overrides replace the library block text for this proposal only. Use Move to change order.
         </p>
+        <SectionsToggleControls />
         <ol className="mt-6 space-y-8">
           {proposal.sections.map((s, idx) => {
-            const resolved = resolveSectionBody(s.contentBlock, s.overrideBody, role);
+            const baseFields = parseBodyFields(s.contentBlock);
+            const overrideFields = parseSectionOverrideFields(s);
             return (
               <li key={s.id} className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <h3 className="font-medium text-zinc-900 dark:text-zinc-50">{s.contentBlock.title}</h3>
-                  {canEdit ? (
-                    <div className="flex flex-wrap gap-2">
-                      <form action={moveProposalSectionFromForm}>
-                        <input type="hidden" name="sectionId" value={s.id} />
-                        <input type="hidden" name="proposalId" value={id} />
-                        <input type="hidden" name="direction" value="up" />
-                        <button type="submit" className="rounded border border-zinc-300 px-2 py-1 text-xs dark:border-zinc-600" disabled={idx === 0}>
-                          Up
-                        </button>
-                      </form>
-                      <form action={moveProposalSectionFromForm}>
-                        <input type="hidden" name="sectionId" value={s.id} />
-                        <input type="hidden" name="proposalId" value={id} />
-                        <input type="hidden" name="direction" value="down" />
-                        <button
-                          type="submit"
-                          className="rounded border border-zinc-300 px-2 py-1 text-xs dark:border-zinc-600"
-                          disabled={idx === proposal.sections.length - 1}
-                        >
-                          Down
-                        </button>
-                      </form>
-                      <form action={removeProposalSectionAction.bind(null, s.id, id)}>
-                        <button type="submit" className="text-xs text-red-600 hover:underline dark:text-red-400">
-                          Remove
-                        </button>
-                      </form>
+                <details data-proposal-section={s.id}>
+                  <summary className="cursor-pointer list-none">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <h3 className="font-medium text-zinc-900 dark:text-zinc-50">{s.contentBlock.title}</h3>
+                      {canEdit ? (
+                        <div className="flex flex-wrap gap-2">
+                          <form action={moveProposalSectionFromForm}>
+                            <input type="hidden" name="sectionId" value={s.id} />
+                            <input type="hidden" name="proposalId" value={id} />
+                            <input type="hidden" name="direction" value="up" />
+                            <button type="submit" className="rounded border border-zinc-300 px-2 py-1 text-xs dark:border-zinc-600" disabled={idx === 0}>
+                              Up
+                            </button>
+                          </form>
+                          <form action={moveProposalSectionFromForm}>
+                            <input type="hidden" name="sectionId" value={s.id} />
+                            <input type="hidden" name="proposalId" value={id} />
+                            <input type="hidden" name="direction" value="down" />
+                            <button
+                              type="submit"
+                              className="rounded border border-zinc-300 px-2 py-1 text-xs dark:border-zinc-600"
+                              disabled={idx === proposal.sections.length - 1}
+                            >
+                              Down
+                            </button>
+                          </form>
+                          <form action={removeProposalSectionAction.bind(null, s.id, id)}>
+                            <button type="submit" className="text-xs text-red-600 hover:underline dark:text-red-400">
+                              Remove
+                            </button>
+                          </form>
+                        </div>
+                      ) : null}
                     </div>
+                  </summary>
+                  {canEdit ? (
+                    <form action={updateSectionOverrideAction.bind(null, s.id, id)} className="mt-4 flex flex-col gap-2">
+                      {baseFields.map((_, fieldIndex) => (
+                        <div key={`${s.id}-ov-${fieldIndex}`} className="space-y-1">
+                          <div className="flex items-center justify-between gap-3">
+                            <label className="text-xs font-medium text-zinc-600 dark:text-zinc-300">Override field {fieldIndex + 1}</label>
+                            <label className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-300">
+                              <input
+                                type="checkbox"
+                                name="overrideActive"
+                                value={String(fieldIndex)}
+                                defaultChecked={overrideFields[fieldIndex] !== undefined && overrideFields[fieldIndex] !== ""}
+                              />
+                              Active override
+                            </label>
+                          </div>
+                          <HtmlEditorField
+                            name="overrideFields"
+                            initialValue={
+                              overrideFields[fieldIndex] !== undefined && overrideFields[fieldIndex] !== ""
+                                ? overrideFields[fieldIndex]
+                                : (baseFields[fieldIndex] ?? "")
+                            }
+                            height="180px"
+                          />
+                        </div>
+                      ))}
+                      <button type="submit" className="w-fit rounded-md bg-zinc-900 px-3 py-1.5 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900">
+                        Save override
+                      </button>
+                    </form>
                   ) : null}
-                </div>
-                <div
-                  className="prose prose-sm mt-2 max-w-none text-zinc-700 dark:prose-invert dark:text-zinc-300"
-                  dangerouslySetInnerHTML={{ __html: resolved }}
-                />
-                {canEdit ? (
-                  <form action={updateSectionOverrideAction.bind(null, s.id, id)} className="mt-4 flex flex-col gap-2">
-                    <label htmlFor={`ov-${s.id}`} className="text-sm font-medium">
-                      Proposal-only override
-                    </label>
-                    <textarea
-                      id={`ov-${s.id}`}
-                      name="overrideBody"
-                      rows={5}
-                      defaultValue={s.overrideBody ?? ""}
-                      placeholder="Leave empty to use library text (respects sensitive visibility)."
-                      className="rounded-md border border-zinc-300 bg-white px-3 py-2 font-mono text-sm dark:border-zinc-600 dark:bg-zinc-900"
-                    />
-                    <button type="submit" className="w-fit rounded-md bg-zinc-900 px-3 py-1.5 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900">
-                      Save override
-                    </button>
-                  </form>
-                ) : null}
+                </details>
               </li>
             );
           })}

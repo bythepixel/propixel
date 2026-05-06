@@ -104,7 +104,7 @@ export function VisualTemplateEditor(props: {
       <div className="space-y-2">
         <h3 className="text-sm font-medium">Live preview</h3>
         <iframe
-          title="Visual template live preview"
+          title="Global Visual live preview"
           srcDoc={previewDocument}
           sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
           className="h-[600px] w-full rounded-lg border border-zinc-200 bg-white dark:border-zinc-800"

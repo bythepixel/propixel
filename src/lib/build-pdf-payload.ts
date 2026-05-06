@@ -1,9 +1,11 @@
 import type { ProposalPdfPayload } from "@/components/proposal-pdf";
 import { parseBodyFields } from "@/lib/content-block-bodies";
+import { parseSectionOverrideFields } from "@/lib/proposal-text";
 
 type SectionIn = {
   order: number;
   overrideBody: string | null;
+  overrideFieldsJson: string;
   contentBlock: {
     title: string;
     body: string;
@@ -29,12 +31,14 @@ export function buildProposalPdfPayload(
         body: s.contentBlock.body,
         bodyFieldsJson: s.contentBlock.bodyFieldsJson,
       });
-      const first =
-        s.overrideBody !== null && s.overrideBody !== undefined && s.overrideBody !== ""
-          ? s.overrideBody
-          : baseFields[0] ?? s.contentBlock.body;
+      const overrideFields = parseSectionOverrideFields(s);
+      const mergedFields = baseFields.map((field, index) => {
+        const override = overrideFields[index];
+        return override !== undefined && override !== "" ? override : field;
+      });
+      const first = mergedFields[0] ?? s.contentBlock.body;
       return {
-        bodyFields: [first, ...baseFields.slice(1)],
+        bodyFields: mergedFields,
         sectionTitle: s.contentBlock.title,
         body: first,
         blockVisualTemplate: s.contentBlock.visualTemplate ?? null,

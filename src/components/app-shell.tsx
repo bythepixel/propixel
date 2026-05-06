@@ -13,10 +13,12 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const isProposalPreview = /^\/proposals\/[^/]+\/preview$/.test(pathname);
+  const isPublicSharePage = /^\/p\/[^/]+$/.test(pathname);
 
   return (
     <>
       {!isProposalPreview &&
+        !isPublicSharePage &&
         (user ? (
           <AppNav email={user.email} role={user.role} />
         ) : (

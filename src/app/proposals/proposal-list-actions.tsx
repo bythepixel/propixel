@@ -14,6 +14,14 @@ export function ProposalListActions({
   return (
     <div className="flex items-center gap-3 text-sm">
       <Link
+        href={`/proposals/${proposalId}`}
+        aria-label="Edit proposal"
+        title="Edit proposal"
+        className="inline-flex h-8 w-8 items-center justify-center rounded border border-zinc-300 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-900"
+      >
+        <span aria-hidden="true">✏️</span>
+      </Link>
+      <Link
         href={`/proposals/${proposalId}/preview`}
         target="_blank"
         rel="noopener noreferrer"

@@ -8,10 +8,14 @@ import { BlockVisualTemplateEditor } from "@/components/block-visual-template-ed
 
 export default async function BlockVisualTemplateDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ saved?: string }>;
 }) {
   const { id } = await params;
+  const sp = await searchParams;
+  const isSaved = sp.saved === "1";
   const session = await getSession();
   if (!session?.user?.id || !canManageContentLibrary(session.user.role)) {
     redirect("/library");
@@ -28,7 +32,12 @@ export default async function BlockVisualTemplateDetailPage({
 
   return (
     <div className="mx-auto max-w-6xl flex-1 px-4 py-8">
-      <h1 className="text-2xl font-semibold">Edit block visual template</h1>
+      <h1 className="text-2xl font-semibold">Edit Block Visual</h1>
+      {isSaved ? (
+        <p className="mt-3 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800 dark:border-green-900 dark:bg-green-900/30 dark:text-green-100">
+          Saved successfully.
+        </p>
+      ) : null}
       <form action={updateBlockVisualTemplateAction.bind(null, id)} className="mt-6 space-y-4">
         <div className="max-w-xl">
           <label htmlFor="name" className="block text-sm font-medium">Name</label>
@@ -42,7 +51,7 @@ export default async function BlockVisualTemplateDetailPage({
           proposalVisualTemplates={proposalVisualTemplates}
         />
         <button type="submit" className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900">
-          Save block visual template
+          Save Block Visual
         </button>
       </form>
       <section className="mt-8 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">

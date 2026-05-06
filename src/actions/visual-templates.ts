@@ -56,4 +56,5 @@ export async function updateVisualTemplateAction(visualTemplateId: string, formD
   });
   revalidatePath("/visual-templates");
   revalidatePath(`/visual-templates/${visualTemplateId}`);
+  redirect(`/visual-templates/${visualTemplateId}?saved=1`);
 }

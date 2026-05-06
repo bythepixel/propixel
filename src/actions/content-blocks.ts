@@ -21,7 +21,7 @@ export async function createContentBlockAction(formData: FormData) {
   const visualTemplateId = String(formData.get("visualTemplateId") ?? "").trim() || null;
   const sensitive = formData.get("sensitive") === "on";
   const tagIds = formData.getAll("tagIds").map(String).filter(Boolean);
-  if (!title || !categoryId) redirect("/library/new?error=missing");
+  if (!title || !categoryId || !visualTemplateId) redirect("/library/new?error=missing");
 
   const block = await prisma.contentBlock.create({
     data: {
@@ -84,6 +84,7 @@ export async function updateContentBlockAction(blockId: string, formData: FormDa
   });
   revalidatePath("/library");
   revalidatePath(`/library/${blockId}/edit`);
+  redirect(`/library/${blockId}/edit?saved=1`);
 }
 
 export async function deleteContentBlockAction(blockId: string, ...args: unknown[]) {
@@ -92,14 +93,32 @@ export async function deleteContentBlockAction(blockId: string, ...args: unknown
   if (!session?.user?.id || !canDeleteBlocks(session.user.role)) {
     throw new Error("Forbidden");
   }
-  await prisma.contentBlock.delete({ where: { id: blockId } });
+  const [templateRefCount, proposalRefCount] = await Promise.all([
+    prisma.templateSection.count({ where: { defaultBlockId: blockId } }),
+    prisma.proposalSection.count({ where: { contentBlockId: blockId } }),
+  ]);
+
+  await prisma.$transaction([
+    // Remove template references so FK constraints pass.
+    prisma.templateSection.updateMany({
+      where: { defaultBlockId: blockId },
+      data: { defaultBlockId: null },
+    }),
+    // Remove proposal sections that reference this block.
+    prisma.proposalSection.deleteMany({
+      where: { contentBlockId: blockId },
+    }),
+    prisma.contentBlock.delete({ where: { id: blockId } }),
+  ]);
   await writeAuditLog({
     userId: session.user.id,
     action: "DELETE",
     entityType: "ContentBlock",
     entityId: blockId,
-    details: {},
+    details: { templateRefCount, proposalRefCount },
   });
   revalidatePath("/library");
+  revalidatePath("/templates");
+  revalidatePath("/proposals");
   redirect("/library");
 }

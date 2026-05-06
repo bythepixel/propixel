@@ -89,7 +89,7 @@ export function BlockVisualTemplateEditor(props: {
         <h3 className="mb-2 text-sm font-medium">Live block preview</h3>
         <div className="mb-3">
           <label htmlFor="proposalTemplateId" className="block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Include proposal visual template CSS/JS
+            Include proposal Global Visual CSS/JS
           </label>
           <select
             id="proposalTemplateId"
@@ -106,7 +106,7 @@ export function BlockVisualTemplateEditor(props: {
           </select>
         </div>
         <iframe
-          title="Block visual template preview"
+          title="Block Visual preview"
           srcDoc={previewDoc}
           sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
           className="h-[600px] w-full rounded-lg border border-zinc-200 bg-white dark:border-zinc-800"

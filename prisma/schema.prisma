@@ -137,6 +137,7 @@ model ProposalSection {
   contentBlockId String
   contentBlock   ContentBlock @relation(fields: [contentBlockId], references: [id])
   overrideBody   String?
+  overrideFieldsJson String   @default("[]")
 }
 
 model PricingLineItem {
@@ -176,5 +177,14 @@ model AuditLog {
   entityType String
   entityId   String
   details    String
+  createdAt  DateTime @default(now())
+}
+
+model MediaAsset {
+  id         String   @id @default(cuid())
+  fileName   String
+  storedPath String   @unique
+  mimeType   String?
+  sizeBytes  Int
   createdAt  DateTime @default(now())
 }

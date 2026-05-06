@@ -23,7 +23,7 @@ export default async function NewBlockVisualTemplatePage() {
   });
   return (
     <div className="mx-auto max-w-6xl flex-1 px-4 py-8">
-      <h1 className="text-2xl font-semibold">New block visual template</h1>
+      <h1 className="text-2xl font-semibold">New Block Visual</h1>
       <form action={createBlockVisualTemplateAction} className="mt-6 space-y-4">
         <div className="max-w-xl">
           <label htmlFor="name" className="block text-sm font-medium">Name</label>
@@ -36,7 +36,7 @@ export default async function NewBlockVisualTemplatePage() {
           proposalVisualTemplates={proposalVisualTemplates}
         />
         <button type="submit" className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900">
-          Create block visual template
+          Create Block Visual
         </button>
       </form>
     </div>

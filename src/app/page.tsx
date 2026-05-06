@@ -20,7 +20,12 @@ export default async function HomePage() {
           </li>
           <li>
             <Link className="font-medium text-blue-600 underline-offset-2 hover:underline dark:text-blue-400" href="/library">
-              Content library
+              Blocks
+            </Link>
+          </li>
+          <li>
+            <Link className="font-medium text-blue-600 underline-offset-2 hover:underline dark:text-blue-400" href="/media">
+              Media
             </Link>
           </li>
           <li>

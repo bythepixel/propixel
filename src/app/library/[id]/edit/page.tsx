@@ -7,8 +7,16 @@ import { deleteContentBlockAction, updateContentBlockAction } from "@/actions/co
 import { BodyFieldsEditor } from "@/components/body-fields-editor";
 import { parseBodyFields } from "@/lib/content-block-bodies";
 
-export default async function EditBlockPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EditBlockPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ saved?: string }>;
+}) {
   const { id } = await params;
+  const sp = await searchParams;
+  const isSaved = sp.saved === "1";
   const session = await getSession();
   if (!session?.user?.id || !canManageContentLibrary(session.user.role)) {
     redirect("/library");
@@ -53,6 +61,11 @@ export default async function EditBlockPage({ params }: { params: Promise<{ id: 
   return (
     <div className="mx-auto max-w-2xl flex-1 px-4 py-8">
       <h1 className="text-2xl font-semibold">Edit block</h1>
+      {isSaved ? (
+        <p className="mt-3 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800 dark:border-green-900 dark:bg-green-900/30 dark:text-green-100">
+          Saved successfully.
+        </p>
+      ) : null}
       <form action={updateContentBlockAction.bind(null, id)} className="mt-8 flex flex-col gap-4">
         <div>
           <label htmlFor="title" className="block text-sm font-medium">
@@ -104,7 +117,7 @@ export default async function EditBlockPage({ params }: { params: Promise<{ id: 
         </div>
         <div>
           <label htmlFor="visualTemplateId" className="block text-sm font-medium">
-            Block visual template
+            Block Visual
           </label>
           <select
             id="visualTemplateId"
@@ -163,7 +176,7 @@ export default async function EditBlockPage({ params }: { params: Promise<{ id: 
           >
             <div>
               <label htmlFor="proposalVisualTemplateId" className="block text-sm">
-                Proposal visual template context (optional)
+                Proposal Global Visual context (optional)
               </label>
               <select
                 id="proposalVisualTemplateId"

@@ -37,7 +37,7 @@ export default async function TemplatesPage() {
             href="/visual-templates"
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-600"
           >
-            Visual templates
+            Global Visuals
           </Link>
         ) : null}
       </div>
@@ -45,14 +45,20 @@ export default async function TemplatesPage() {
         {templates.map((t) => (
           <li key={t.id} className="flex items-center justify-between py-4">
             <div>
-              <Link href={`/templates/${t.id}`} className="font-medium text-blue-600 hover:underline dark:text-blue-400">
-                {t.name}
-              </Link>
+              <h2 className="font-medium text-zinc-900 dark:text-zinc-50">{t.name}</h2>
               <p className="text-xs text-zinc-500">{t._count.sections} default sections</p>
               <p className="text-xs text-zinc-500">
-                Visual template: {t.visualTemplate?.name ?? "Not set"}
+                Global Visual: {t.visualTemplate?.name ?? "Not set"}
               </p>
             </div>
+            <Link
+              href={`/templates/${t.id}`}
+              aria-label="Edit template"
+              title="Edit template"
+              className="inline-flex h-8 w-8 items-center justify-center rounded border border-zinc-300 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            >
+              <span aria-hidden="true">✏️</span>
+            </Link>
           </li>
         ))}
       </ul>

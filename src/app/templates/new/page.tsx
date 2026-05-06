@@ -43,7 +43,7 @@ export default async function NewTemplatePage() {
         </div>
         <div>
           <label htmlFor="visualTemplateId" className="block text-sm font-medium">
-            Visual template
+            Global Visual
           </label>
           <select
             id="visualTemplateId"

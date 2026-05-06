@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { canEditBlockDefinition, canManageContentLibrary } from "@/lib/permissions";
-import { resolveSectionBody } from "@/lib/proposal-text";
+import { LibrarySearchPanel } from "./library-search-panel";
 
 type Search = { q?: string; category?: string; tag?: string };
 
@@ -52,7 +52,7 @@ export default async function LibraryPage({
     <div className="mx-auto max-w-6xl flex-1 px-4 py-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Content library</h1>
+          <h1 className="text-2xl font-semibold">Blocks</h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             Search and filter reusable blocks. Sensitive blocks respect your role.
           </p>
@@ -70,72 +70,15 @@ export default async function LibraryPage({
             href="/block-visual-templates"
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-600"
           >
-            Block visual templates
+            Block Visuals
           </Link>
         ) : null}
       </div>
 
-      <form className="mt-6 flex flex-wrap gap-3 border-b border-zinc-200 pb-6 dark:border-zinc-800" role="search">
-        <div>
-          <label htmlFor="q" className="sr-only">
-            Keyword
-          </label>
-          <input
-            id="q"
-            name="q"
-            type="search"
-            placeholder="Keyword"
-            defaultValue={q}
-            className="w-48 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-          />
-        </div>
-        <div>
-          <label htmlFor="category" className="sr-only">
-            Category
-          </label>
-          <select
-            id="category"
-            name="category"
-            defaultValue={categoryId}
-            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-          >
-            <option value="">All categories</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="tag" className="sr-only">
-            Tag
-          </label>
-          <select
-            id="tag"
-            name="tag"
-            defaultValue={tagId}
-            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-          >
-            <option value="">All tags</option>
-            {tags.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <button
-          type="submit"
-          className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-600 dark:hover:bg-zinc-900"
-        >
-          Apply
-        </button>
-      </form>
+      <LibrarySearchPanel q={q} categoryId={categoryId} tagId={tagId} categories={categories} tags={tags} />
 
       <ul className="mt-6 divide-y divide-zinc-200 dark:divide-zinc-800">
         {blocks.map((b) => {
-          const preview = resolveSectionBody(b, null, role);
           const canEdit = canEditBlockDefinition(role, b.sensitive);
           return (
             <li key={b.id} className="py-5">
@@ -165,10 +108,6 @@ export default async function LibraryPage({
                       Block wrapper: {b.visualTemplate.name}
                     </p>
                   ) : null}
-                  <div
-                    className="prose prose-sm mt-2 max-w-3xl text-zinc-700 dark:prose-invert dark:text-zinc-300"
-                    dangerouslySetInnerHTML={{ __html: preview }}
-                  />
                 </div>
                 {canManage && canEdit ? (
                   <div className="flex shrink-0 items-center gap-3">
@@ -177,16 +116,20 @@ export default async function LibraryPage({
                         href={`/library/${b.id}/wrapper-preview`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs font-medium text-zinc-600 hover:underline dark:text-zinc-400"
+                        aria-label="Preview block wrapper"
+                        title="Preview block wrapper"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded border border-zinc-300 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-900"
                       >
-                        Preview wrapper
+                        <span aria-hidden="true">👁</span>
                       </Link>
                     ) : null}
                     <Link
                       href={`/library/${b.id}/edit`}
-                      className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
+                      aria-label="Edit block"
+                      title="Edit block"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded border border-zinc-300 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-900"
                     >
-                      Edit
+                      <span aria-hidden="true">✏️</span>
                     </Link>
                   </div>
                 ) : canManage && !canEdit ? (

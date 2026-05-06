@@ -48,9 +48,7 @@ export default async function ProposalsPage() {
         {proposals.map((p) => (
           <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
             <div>
-              <Link href={`/proposals/${p.id}`} className="font-medium text-blue-600 hover:underline dark:text-blue-400">
-                {p.title}
-              </Link>
+              <h2 className="font-medium text-zinc-900 dark:text-zinc-50">{p.title}</h2>
               <p className="text-xs text-zinc-500">
                 {p.author.name ?? p.author.email}
                 {p.published ? (

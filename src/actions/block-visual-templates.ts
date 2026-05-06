@@ -59,4 +59,5 @@ export async function updateBlockVisualTemplateAction(templateId: string, formDa
   });
   revalidatePath("/block-visual-templates");
   revalidatePath(`/block-visual-templates/${templateId}`);
+  redirect(`/block-visual-templates/${templateId}?saved=1`);
 }
