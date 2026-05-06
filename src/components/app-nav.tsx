@@ -76,6 +76,9 @@ export function AppNav({
                 <Link className="block rounded px-2 py-1 text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800" href="/media">
                   Media
                 </Link>
+                <Link className="block rounded px-2 py-1 text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800" href="/global-variables">
+                  Global Variables
+                </Link>
               </div>
             </details>
 

@@ -12,16 +12,19 @@ import {
 import {
   addProposalEmbedAction,
   addProposalSectionAction,
+  deleteProposalVariableAction,
   moveProposalSectionFromForm,
   publishProposalAction,
   removeProposalEmbedAction,
   removeProposalSectionAction,
   savePricingAction,
   unpublishProposalAction,
+  upsertProposalVariableAction,
   updateProposalTitleAction,
   updateSectionOverrideAction,
 } from "@/actions/proposals";
 import { HtmlEditorField } from "@/components/html-editor-field";
+import { VARIABLE_TOKEN_HELP } from "@/lib/variable-tokens";
 import { ProposalUpload } from "./proposal-upload";
 import { SectionsToggleControls } from "./sections-toggle-controls";
 import { ShareLinkCopy } from "./share-link-copy";
@@ -41,9 +44,14 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
       lineItems: { orderBy: { order: "asc" } },
       embeds: true,
       attachments: { orderBy: { createdAt: "desc" } },
+      variables: { orderBy: { name: "asc" } },
     },
   });
   if (!proposal) notFound();
+  const globalVariables = await prisma.globalVariable.findMany({
+    orderBy: { name: "asc" },
+    select: { name: true, value: true },
+  });
 
   const role = session.user.role;
   const canEdit = canEditProposal(role);
@@ -125,6 +133,102 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
           )}
         </div>
       </div>
+
+      <section className="mt-8 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+        <details>
+          <summary className="cursor-pointer list-none text-lg font-medium">Proposal Variables</summary>
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            Proposal variables override globals when names match. {VARIABLE_TOKEN_HELP}
+          </p>
+          {globalVariables.length > 0 ? (
+            <p className="mt-1 text-xs text-zinc-500">
+              Global variables available: {globalVariables.map((item) => item.name).join(", ")}
+            </p>
+          ) : (
+            <p className="mt-1 text-xs text-zinc-500">No global variables defined yet.</p>
+          )}
+          {canEdit ? (
+            <>
+              <form action={upsertProposalVariableAction.bind(null, id)} className="mt-4 flex flex-wrap items-end gap-2">
+                <div>
+                  <label htmlFor="new-proposal-var-name" className="block text-xs text-zinc-500">
+                    Name
+                  </label>
+                  <input
+                    id="new-proposal-var-name"
+                    name="name"
+                    required
+                    placeholder="project_name"
+                    className="mt-1 rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+                  />
+                </div>
+                <div className="min-w-[260px] flex-1">
+                  <label htmlFor="new-proposal-var-value" className="block text-xs text-zinc-500">
+                    Value
+                  </label>
+                  <input
+                    id="new-proposal-var-value"
+                    name="value"
+                    placeholder="Acme Rebrand 2026"
+                    className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+                  />
+                </div>
+                <button type="submit" className="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900">
+                  Save
+                </button>
+              </form>
+              <ul className="mt-4 divide-y divide-zinc-200 dark:divide-zinc-800">
+                {proposal.variables.map((variable) => (
+                  <li key={variable.id} className="py-3">
+                    <form action={upsertProposalVariableAction.bind(null, id)} className="flex flex-wrap items-end gap-2">
+                      <input type="hidden" name="variableId" value={variable.id} />
+                      <div>
+                        <label htmlFor={`pv-name-${variable.id}`} className="block text-xs text-zinc-500">
+                          Name
+                        </label>
+                        <input
+                          id={`pv-name-${variable.id}`}
+                          name="name"
+                          required
+                          defaultValue={variable.name}
+                          className="mt-1 rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+                        />
+                      </div>
+                      <div className="min-w-[260px] flex-1">
+                        <label htmlFor={`pv-value-${variable.id}`} className="block text-xs text-zinc-500">
+                          Value
+                        </label>
+                        <input
+                          id={`pv-value-${variable.id}`}
+                          name="value"
+                          defaultValue={variable.value}
+                          className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+                        />
+                      </div>
+                      <button type="submit" className="rounded border border-zinc-300 px-3 py-2 text-xs dark:border-zinc-600">
+                        Save
+                      </button>
+                    </form>
+                    <form action={deleteProposalVariableAction.bind(null, id, variable.id)} className="mt-1">
+                      <button type="submit" className="text-xs text-red-600 hover:underline dark:text-red-400">
+                        Delete
+                      </button>
+                    </form>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <ul className="mt-3 list-disc pl-5 text-sm text-zinc-600 dark:text-zinc-300">
+              {proposal.variables.map((variable) => (
+                <li key={variable.id}>
+                  <span className="font-mono">{variable.name}</span>: {variable.value}
+                </li>
+              ))}
+            </ul>
+          )}
+        </details>
+      </section>
 
       <section aria-labelledby="sections-heading" className="mt-10">
         <h2 id="sections-heading" className="text-lg font-medium">

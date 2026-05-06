@@ -42,8 +42,12 @@ export default async function VisualTemplateDetailPage({
       },
       lineItems: { orderBy: { order: "asc" } },
       embeds: true,
+      variables: { select: { name: true, value: true } },
     },
     orderBy: { updatedAt: "desc" },
+  });
+  const globalVariables = await prisma.globalVariable.findMany({
+    select: { name: true, value: true },
   });
   const previewData = sampleProposal
     ? buildProposalPdfPayload(
@@ -56,6 +60,7 @@ export default async function VisualTemplateDetailPage({
         })),
         sampleProposal.discountPercent,
         sampleProposal.embeds,
+        { globals: globalVariables, proposal: sampleProposal.variables },
       )
     : undefined;
 

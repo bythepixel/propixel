@@ -5,6 +5,7 @@ import { getSession } from "@/lib/session";
 import { canEditBlockDefinition, canManageContentLibrary } from "@/lib/permissions";
 import { renderBlockVisualTemplateDocument } from "@/lib/block-visual-template-render";
 import { parseBodyFields } from "@/lib/content-block-bodies";
+import { buildVariableMap } from "@/lib/variable-tokens";
 
 export default async function BlockWrapperPreviewPage({
   params,
@@ -58,6 +59,10 @@ export default async function BlockWrapperPreviewPage({
   }
 
   const proposalVisualTemplateId = (sp.proposalVisualTemplateId ?? "").trim();
+  const globalVariables = await prisma.globalVariable.findMany({
+    select: { name: true, value: true },
+  });
+  const variableMap = buildVariableMap(globalVariables, []);
   const proposalVisualTemplate = proposalVisualTemplateId
     ? await prisma.visualTemplate.findUnique({
         where: { id: proposalVisualTemplateId },
@@ -75,6 +80,7 @@ export default async function BlockWrapperPreviewPage({
       bodyFields: parseBodyFields({ body: block.body, bodyFieldsJson: block.bodyFieldsJson }),
     },
     proposalVisualTemplate,
+    variables: variableMap,
   });
 
   return (

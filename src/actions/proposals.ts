@@ -78,6 +78,72 @@ export async function updateProposalTitleAction(proposalId: string, formData: Fo
   revalidatePath(`/proposals/${proposalId}`);
 }
 
+export async function upsertProposalVariableAction(proposalId: string, formData: FormData) {
+  const session = await getSession();
+  if (!session?.user?.id || !canEditProposal(session.user.role)) {
+    throw new Error("Forbidden");
+  }
+  const name = String(formData.get("name") ?? "").trim();
+  const value = String(formData.get("value") ?? "");
+  const variableId = String(formData.get("variableId") ?? "").trim();
+  if (!name) return;
+
+  if (variableId) {
+    await prisma.proposalVariable.update({
+      where: { id: variableId },
+      data: { name, value },
+    });
+  } else {
+    await prisma.proposalVariable.upsert({
+      where: { proposalId_name: { proposalId, name } },
+      update: { value },
+      create: { proposalId, name, value },
+    });
+  }
+
+  await writeAuditLog({
+    userId: session.user.id,
+    action: "UPSERT_PROPOSAL_VARIABLE",
+    entityType: "Proposal",
+    entityId: proposalId,
+    details: { name },
+  });
+  revalidatePath(`/proposals/${proposalId}`);
+  revalidatePath(`/proposals/${proposalId}/preview`);
+  const proposal = await prisma.proposal.findUnique({
+    where: { id: proposalId },
+    select: { shareToken: true },
+  });
+  if (proposal?.shareToken) {
+    revalidatePath(`/p/${proposal.shareToken}`);
+  }
+}
+
+export async function deleteProposalVariableAction(proposalId: string, variableId: string, ...args: unknown[]) {
+  void args;
+  const session = await getSession();
+  if (!session?.user?.id || !canEditProposal(session.user.role)) {
+    throw new Error("Forbidden");
+  }
+  await prisma.proposalVariable.delete({ where: { id: variableId } });
+  await writeAuditLog({
+    userId: session.user.id,
+    action: "DELETE_PROPOSAL_VARIABLE",
+    entityType: "Proposal",
+    entityId: proposalId,
+    details: { variableId },
+  });
+  revalidatePath(`/proposals/${proposalId}`);
+  revalidatePath(`/proposals/${proposalId}/preview`);
+  const proposal = await prisma.proposal.findUnique({
+    where: { id: proposalId },
+    select: { shareToken: true },
+  });
+  if (proposal?.shareToken) {
+    revalidatePath(`/p/${proposal.shareToken}`);
+  }
+}
+
 export async function updateSectionOverrideAction(sectionId: string, proposalId: string, formData: FormData) {
   const session = await getSession();
   if (!session?.user?.id || !canEditProposal(session.user.role)) {

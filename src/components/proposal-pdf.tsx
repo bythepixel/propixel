@@ -45,6 +45,7 @@ export type ProposalPdfPayload = {
   lineItems: { label: string; quantity: number; unitPrice: number }[];
   discountPercent: number;
   embeds: { label: string | null; url: string; kind: string }[];
+  variables?: Record<string, string>;
 };
 
 function ProposalDoc({ data }: { data: ProposalPdfPayload }) {

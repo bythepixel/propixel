@@ -23,7 +23,11 @@ export default async function ProposalsPage() {
       },
       lineItems: { orderBy: { order: "asc" } },
       embeds: true,
+      variables: { select: { name: true, value: true } },
     },
+  });
+  const globalVariables = await prisma.globalVariable.findMany({
+    select: { name: true, value: true },
   });
 
   return (
@@ -70,6 +74,7 @@ export default async function ProposalsPage() {
                 })),
                 p.discountPercent,
                 p.embeds,
+                { globals: globalVariables, proposal: p.variables },
               )}
             />
           </li>

@@ -46,12 +46,17 @@ export async function GET(
       lineItems: { orderBy: { order: "asc" } },
       embeds: true,
       template: { include: { visualTemplate: true } },
+      variables: { select: { name: true, value: true } },
     },
   });
 
   if (!proposal) {
     return new Response("Not found", { status: 404 });
   }
+
+  const globalVariables = await prisma.globalVariable.findMany({
+    select: { name: true, value: true },
+  });
 
   const payload = buildProposalPdfPayload(
     proposal.title,
@@ -63,6 +68,7 @@ export async function GET(
     })),
     proposal.discountPercent,
     proposal.embeds,
+    { globals: globalVariables, proposal: proposal.variables },
   );
 
   const doc = proposal.template?.visualTemplate

@@ -32,9 +32,13 @@ export default async function ProposalPreviewPage({
       lineItems: { orderBy: { order: "asc" } },
       embeds: true,
       template: { include: { visualTemplate: true } },
+      variables: { select: { name: true, value: true } },
     },
   });
   if (!proposal) notFound();
+  const globalVariables = await prisma.globalVariable.findMany({
+    select: { name: true, value: true },
+  });
 
   const pdfData = buildProposalPdfPayload(
     proposal.title,
@@ -42,6 +46,7 @@ export default async function ProposalPreviewPage({
     proposal.lineItems.map((l) => ({ label: l.label, quantity: l.quantity, unitPrice: l.unitPrice })),
     proposal.discountPercent,
     proposal.embeds,
+    { globals: globalVariables, proposal: proposal.variables },
   );
 
   const visualTemplate = proposal.template?.visualTemplate;

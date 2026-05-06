@@ -1,6 +1,7 @@
 import type { ProposalPdfPayload } from "@/components/proposal-pdf";
 import { parseBodyFields } from "@/lib/content-block-bodies";
 import { parseSectionOverrideFields } from "@/lib/proposal-text";
+import { applyVariableTokens, buildVariableMap } from "@/lib/variable-tokens";
 
 type SectionIn = {
   order: number;
@@ -22,8 +23,13 @@ export function buildProposalPdfPayload(
   lineItems: { label: string; quantity: number; unitPrice: number }[],
   discountPercent: number,
   embeds: { label: string | null; url: string; kind: string }[],
+  variables?: {
+    globals?: { name: string; value: string }[];
+    proposal?: { name: string; value: string }[];
+  },
 ): ProposalPdfPayload {
   const sorted = [...sections].sort((a, b) => a.order - b.order);
+  const variableMap = buildVariableMap(variables?.globals ?? [], variables?.proposal ?? []);
   return {
     title,
     sections: sorted.map((s) => {
@@ -34,7 +40,8 @@ export function buildProposalPdfPayload(
       const overrideFields = parseSectionOverrideFields(s);
       const mergedFields = baseFields.map((field, index) => {
         const override = overrideFields[index];
-        return override !== undefined && override !== "" ? override : field;
+        const value = override !== undefined && override !== "" ? override : field;
+        return applyVariableTokens(value, variableMap, { missingMode: "html-warning" });
       });
       const first = mergedFields[0] ?? s.contentBlock.body;
       return {
@@ -47,5 +54,6 @@ export function buildProposalPdfPayload(
     lineItems,
     discountPercent,
     embeds,
+    variables: variableMap,
   };
 }
