@@ -74,7 +74,7 @@ export default async function ProposalPreviewPage({
       ) : null}
 
       {!wrappedDocument ? (
-        <article className="proposal-print mx-auto w-full max-w-3xl p-8 text-zinc-900 dark:text-zinc-50 print:max-w-none print:p-0">
+        <article className="proposal-print mx-auto w-full max-w-[1440px] p-8 text-zinc-900 dark:text-zinc-50 print:max-w-none print:p-0">
         <h1 className="text-2xl font-bold">{proposal.title}</h1>
         {pdfData.sections.map((s, i) => (
           <section key={i} className="mt-8">

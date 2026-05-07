@@ -17,7 +17,7 @@ export default async function MediaPage() {
   });
 
   return (
-    <div className="mx-auto max-w-5xl flex-1 px-4 py-8">
+    <div className="mx-auto max-w-[1440px] flex-1 px-4 py-8">
       <h1 className="text-2xl font-semibold">Media</h1>
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
         Upload assets and use their URLs in HTML/CSS/JS templates, including CSS background images.

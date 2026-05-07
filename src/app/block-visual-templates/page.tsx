@@ -15,7 +15,7 @@ export default async function BlockVisualTemplatesPage() {
   });
 
   return (
-    <div className="mx-auto max-w-5xl flex-1 px-4 py-8">
+    <div className="mx-auto max-w-[1440px] flex-1 px-4 py-8">
       <div className="flex items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Block Visuals</h1>

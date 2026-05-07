@@ -71,7 +71,7 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
   const shareUrl = proposal.shareToken ? `${origin}/p/${proposal.shareToken}` : null;
 
   return (
-    <div className="mx-auto max-w-4xl flex-1 px-4 py-8">
+    <div className="mx-auto w-full max-w-[1440px] flex-1 px-4 py-8">
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-zinc-200 pb-6 dark:border-zinc-800">
         <div className="min-w-0 flex-1">
           {canEdit ? (

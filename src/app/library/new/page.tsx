@@ -19,7 +19,7 @@ export default async function NewBlockPage() {
   });
 
   return (
-    <div className="mx-auto max-w-2xl flex-1 px-4 py-8">
+    <div className="mx-auto max-w-[1440px] flex-1 px-4 py-8">
       <h1 className="text-2xl font-semibold">New content block</h1>
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
         Add usage guidance so producers pick the right block. Mark pricing or legal copy as sensitive to restrict

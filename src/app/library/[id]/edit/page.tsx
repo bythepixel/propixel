@@ -30,7 +30,7 @@ export default async function EditBlockPage({
 
   if (!canEditBlockDefinition(session.user.role, block.sensitive)) {
     return (
-      <div className="mx-auto max-w-lg flex-1 px-4 py-12">
+      <div className="mx-auto max-w-[1440px] flex-1 px-4 py-12">
         <h1 className="text-xl font-semibold">Restricted block</h1>
         <p className="mt-2 text-zinc-600 dark:text-zinc-400">
           This block is marked sensitive. Ask an Approver, Publisher, or Admin to edit it.
@@ -59,7 +59,7 @@ export default async function EditBlockPage({
   });
 
   return (
-    <div className="mx-auto max-w-2xl flex-1 px-4 py-8">
+    <div className="mx-auto max-w-[1440px] flex-1 px-4 py-8">
       <h1 className="text-2xl font-semibold">Edit block</h1>
       {isSaved ? (
         <p className="mt-3 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800 dark:border-green-900 dark:bg-green-900/30 dark:text-green-100">

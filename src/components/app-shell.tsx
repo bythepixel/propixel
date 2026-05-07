@@ -23,7 +23,7 @@ export function AppShell({
           <AppNav email={user.email} role={user.role} />
         ) : (
           <header className="border-b border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950">
-            <div className="mx-auto flex max-w-6xl items-center justify-between">
+            <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between">
               <Link href="/" className="font-semibold text-zinc-900 dark:text-zinc-50">
                 Proposal CMS
               </Link>

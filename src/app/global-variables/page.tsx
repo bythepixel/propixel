@@ -16,7 +16,7 @@ export default async function GlobalVariablesPage() {
   });
 
   return (
-    <div className="mx-auto max-w-4xl flex-1 px-4 py-8">
+    <div className="mx-auto max-w-[1440px] flex-1 px-4 py-8">
       <h1 className="text-2xl font-semibold">Global Variables</h1>
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
         Global values available to all proposals. {VARIABLE_TOKEN_HELP}

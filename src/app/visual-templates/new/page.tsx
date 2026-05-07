@@ -28,7 +28,7 @@ export default async function NewVisualTemplatePage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl flex-1 px-4 py-8">
+    <div className="mx-auto max-w-[1440px] flex-1 px-4 py-8">
       <h1 className="text-2xl font-semibold">New Global Visual</h1>
       <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
         This wraps the full proposal render: Visual Template → Template → Content Blocks.

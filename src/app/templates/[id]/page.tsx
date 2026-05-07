@@ -41,7 +41,7 @@ export default async function TemplateDetailPage({
   });
 
   return (
-    <div className="mx-auto max-w-3xl flex-1 px-4 py-8">
+    <div className="mx-auto max-w-[1440px] flex-1 px-4 py-8">
       {isSaved ? (
         <p className="mb-4 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800 dark:border-green-900 dark:bg-green-900/30 dark:text-green-100">
           Saved successfully.

@@ -15,7 +15,7 @@ export default async function NewTemplatePage() {
   });
 
   return (
-    <div className="mx-auto max-w-xl flex-1 px-4 py-8">
+    <div className="mx-auto max-w-[1440px] flex-1 px-4 py-8">
       <h1 className="text-2xl font-semibold">New template</h1>
       <form action={createTemplateAction} className="mt-8 flex flex-col gap-4">
         <div>

@@ -16,7 +16,7 @@ export default async function VisualTemplatesPage() {
   });
 
   return (
-    <div className="mx-auto max-w-4xl flex-1 px-4 py-8">
+    <div className="mx-auto max-w-[1440px] flex-1 px-4 py-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Global Visuals</h1>

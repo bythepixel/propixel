@@ -33,7 +33,7 @@ export default async function BlockWrapperPreviewPage({
 
   if (!canEditBlockDefinition(session.user.role, block.sensitive)) {
     return (
-      <div className="mx-auto max-w-xl flex-1 px-4 py-12">
+      <div className="mx-auto max-w-[1440px] flex-1 px-4 py-12">
         <h1 className="text-xl font-semibold">Restricted block</h1>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
           You do not have permission to preview this sensitive block wrapper.
@@ -44,7 +44,7 @@ export default async function BlockWrapperPreviewPage({
 
   if (!block.visualTemplate) {
     return (
-      <div className="mx-auto max-w-xl flex-1 px-4 py-12">
+      <div className="mx-auto max-w-[1440px] flex-1 px-4 py-12">
         <h1 className="text-xl font-semibold">No block wrapper assigned</h1>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
           Assign a Block Visual Template on this content block first.
@@ -85,7 +85,7 @@ export default async function BlockWrapperPreviewPage({
 
   return (
     <div className="flex min-h-screen flex-1 flex-col bg-zinc-50 px-4 py-6 dark:bg-zinc-950">
-      <div className="mx-auto mb-3 w-full max-w-6xl text-xs text-zinc-500">
+      <div className="mx-auto mb-3 w-full max-w-[1440px] text-xs text-zinc-500">
         Previewing wrapper: <span className="font-medium">{block.visualTemplate.name}</span>
         {proposalVisualTemplate ? (
           <span>
@@ -94,7 +94,7 @@ export default async function BlockWrapperPreviewPage({
           </span>
         ) : null}
       </div>
-      <div className="mx-auto h-[82vh] w-full max-w-6xl">
+      <div className="mx-auto h-[82vh] w-full max-w-[1440px]">
         <iframe
           title={`Block wrapper preview: ${block.title}`}
           srcDoc={previewDoc}

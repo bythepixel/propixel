@@ -22,7 +22,7 @@ export default async function NewBlockVisualTemplatePage() {
     select: { id: true, name: true, css: true, js: true },
   });
   return (
-    <div className="mx-auto max-w-6xl flex-1 px-4 py-8">
+    <div className="mx-auto max-w-[1440px] flex-1 px-4 py-8">
       <h1 className="text-2xl font-semibold">New Block Visual</h1>
       <form action={createBlockVisualTemplateAction} className="mt-6 space-y-4">
         <div className="max-w-xl">
